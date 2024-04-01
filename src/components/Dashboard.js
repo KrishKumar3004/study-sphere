@@ -160,6 +160,15 @@ export default function Dashboard() {
                     </Toolbar>
                     <Divider />
                     <List>
+
+                        <ListItem button onClick={(e) => navigate('/')}>
+                            <ListItemIcon>
+                                <JoinClassIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="All classes" />
+                        </ListItem>
+
+
                         <ListItem button >
                             <ListItemIcon onClick={handleJoinClass}>
                                 <JoinClassIcon />
