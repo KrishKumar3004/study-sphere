@@ -1,23 +1,18 @@
-import logo from './logo.svg';
-import './App.css';
-
+import { useState } from 'react';
+import SignUp from './components/SignUp.js';
+import Home from './components/Home.js';
+import SignIn from './components/SignIn.js';
+import BasicModal from './components/CreateClass.js';
+import Dashboard from './components/Dashboard.js';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Join from './components/JoinClass.js';
 function App() {
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Dashboard />
+      </Router >
     </div>
   );
 }
