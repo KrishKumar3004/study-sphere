@@ -38,6 +38,7 @@ import { useRef } from 'react';
 import JoinClass from './JoinClass';
 import CreateClass from './CreateClass';
 import Cards from './Cards';
+import Class from './Class';
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
@@ -245,7 +246,12 @@ export default function Dashboard() {
                                     <SignIn />
                                 }
                             />
-
+                            <Route
+                                exact path="/:classId"
+                                element={
+                                    <Class />
+                                }
+                            />
 
                         </Routes>
 

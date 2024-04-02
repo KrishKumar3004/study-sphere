@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { updateProfile } from "firebase/auth";
-import { updateDoc, setDoc } from "firebase/firestore";
+import { updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -202,6 +202,65 @@ export const FirebaseProvider = (props) => {
             console.error("Error creating user: ", error);
         }
     };
+
+    const addBlog = async (classId, title, description, attachedFile) => {
+        const fileRef = ref(storage, `uploads/files/${Date.now()}-${attachedFile.name}`);
+        const uploadResult = await uploadBytes(fileRef, attachedFile);
+        try {
+            const collectionRef = collection(firestore, 'classes', classId, 'blogs');
+            const result = await addDoc(collectionRef, {
+                title: title,
+                description: description,
+                attachedFileURL: uploadResult.ref.fullPath,
+
+                userEmail: user.email,
+            });
+            console.log('Blog added with ID: ', result.id);
+        } catch (error) {
+            console.error('Error adding blog: ', error);
+        }
+    };
+
+    const getBlogs = async (classId) => {
+        try {
+            const snapshot = await getDocs(collection(firestore, 'classes', classId, 'blogs'));
+            const blogs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            return blogs;
+        } catch (error) {
+            console.error('Error getting blogs: ', error);
+            return [];
+        }
+    };
+
+    const updateBlog = async (classId, blogId, newData) => {
+        try {
+            await updateDoc(doc(firestore, 'classes', classId, 'blogs', blogId), newData);
+            console.log('Blog updated successfully');
+        } catch (error) {
+            console.error('Error updating blog: ', error);
+        }
+    };
+
+    const deleteBlog = async (classId, blogId) => {
+        try {
+            await deleteDoc(doc(firestore, 'classes', classId, 'blogs', blogId));
+            console.log('Blog deleted successfully');
+        } catch (error) {
+            console.error('Error deleting blog: ', error);
+        }
+    };
+    const generateDownloadUrl = async (filePath) => {
+        try {
+            console.log(filePath);
+            const storageRef = ref(storage, filePath);
+            const downloadUrl = await getDownloadURL(storageRef);
+            console.log(downloadUrl);
+            return downloadUrl;
+        } catch (error) {
+            console.error('Error generating download URL: ', error);
+            return null;
+        }
+    };
     return (
         <FirebaseContext.Provider
             value={{
@@ -212,7 +271,10 @@ export const FirebaseProvider = (props) => {
                 createClass,
                 isLoggedIn,
                 user,
-                logoutUser
+                logoutUser,
+                addBlog,
+                getBlogs,
+                generateDownloadUrl
             }}
         >
             {props.children}
