@@ -7,12 +7,13 @@ import { useMediaQuery } from '@mui/material';
 import { useFirebase } from '../context/firebase';
 import { useNavigate } from 'react-router-dom';
 
-const CreateClass = ({ open, setOpen }) => {
+const JoinClass = ({ open, setOpen }) => {
     const isSmallScreen = useMediaQuery('(max-width:600px)');
     const modalWidth = isSmallScreen ? '90%' : 600;
     const firebase = useFirebase();
     const [courseId, setCourseId] = React.useState("");
     const navigate = useNavigate();
+
     const handleClose = () => {
         setOpen(false);
     };
@@ -38,25 +39,36 @@ const CreateClass = ({ open, setOpen }) => {
                     borderRadius: 8,
                 }}
             >
-                <Typography variant="h5" gutterBottom>
-                    Join Your Class
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    Welcome to the class joining wizard. Please enter the unique Course ID for your class.
-                </Typography>
-                <form onSubmit={handleSubmit}>
-
-                    <input type="text" id="courseId" value={courseId}
-                        onChange={(event) => setCourseId(event.target.value)}
-                        placeholder='Enter Course ID'
-                        style={{ marginBottom: '16px', width: '100%', padding: '8px' }} />
-                    <Button variant="contained" color="primary" type="submit">
-                        Join Class
-                    </Button>
-                </form>
+                {firebase.user ? (
+                    <>
+                        <Typography variant="h5" gutterBottom>
+                            Join Your Class
+                        </Typography>
+                        <Typography variant="body1" gutterBottom>
+                            Welcome to the class joining wizard. Please enter the unique Course ID for your class.
+                        </Typography>
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="text"
+                                id="courseId"
+                                value={courseId}
+                                onChange={(event) => setCourseId(event.target.value)}
+                                placeholder='Enter Course ID'
+                                style={{ marginBottom: '16px', width: '100%', padding: '8px' }}
+                            />
+                            <Button variant="contained" color="primary" type="submit">
+                                Join Class
+                            </Button>
+                        </form>
+                    </>
+                ) : (
+                    <Typography variant="body1" gutterBottom>
+                        Please login to join the class.
+                    </Typography>
+                )}
             </Box>
         </Modal>
     );
 };
 
-export default CreateClass;
+export default JoinClass;

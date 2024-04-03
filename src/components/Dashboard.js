@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -13,7 +14,9 @@ import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-
+import HomeIcon from '@mui/icons-material/Home';
+import AddIcon from '@mui/icons-material/Add';
+import JoinIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -40,6 +43,7 @@ import CreateClass from './CreateClass';
 import Cards from './Cards';
 import Class from './Class';
 const drawerWidth = 240;
+
 
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
@@ -85,7 +89,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     }),
 );
 
-// TODO remove, this demo shouldn't need to reset the theme.
+
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
@@ -97,8 +101,18 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const firebase = useFirebase();
 
+    const [displayName, setDisplayName] = React.useState("Guest");
     const [joinModalOpen, setJoinModalOpen] = React.useState(false);
     const [createModalOpen, setCreateModalOpen] = React.useState(false);
+
+    useEffect(() => {
+        if (firebase.user !== null) {
+            setDisplayName(firebase.user.displayName);
+        } else {
+            setDisplayName("Guest");
+        }
+    }, [firebase.user]);
+
     const handleJoinClass = () => {
         console.log("hello");
         setJoinModalOpen(true);
@@ -106,7 +120,7 @@ export default function Dashboard() {
     const handleCreateClass = () => {
         setCreateModalOpen(true);
     }
-    console.log(firebase.user);
+
     return (
         <ThemeProvider theme={defaultTheme}>
             <Box sx={{ display: 'flex' }}>
@@ -114,7 +128,7 @@ export default function Dashboard() {
                 <AppBar position="absolute" open={open}>
                     <Toolbar
                         sx={{
-                            pr: '24px', // keep right padding when drawer closed
+                            pr: '24px',
                         }}
                     >
                         <IconButton
@@ -137,11 +151,11 @@ export default function Dashboard() {
                             sx={{ flexGrow: 1 }}
                         >
 
-                            {firebase.user !== null ? firebase.user.displayName : "Guest"}
+                            {displayName}
                         </Typography>
-                        <IconButton color="inherit">
-                            <Badge badgeContent={4} color="secondary">
-                                <NotificationsIcon />
+                        <IconButton color="inherit" onClick={(e) => navigate('/')}>
+                            <Badge color="secondary">
+                                <i class="fa-solid fa-user-graduate"></i>
                             </Badge>
                         </IconButton>
                     </Toolbar>
@@ -201,7 +215,7 @@ export default function Dashboard() {
                                 </ListItem>
                             </>
                         ) : (
-                            <ListItem button onClick={firebase.logoutUser}>
+                            <ListItem button onClick={firebase.signOutUser}>
                                 <ListItemIcon>
                                     <ExitToAppIcon />
                                 </ListItemIcon>

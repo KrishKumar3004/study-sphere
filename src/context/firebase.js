@@ -1,14 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
-import { updateProfile } from "firebase/auth";
-import { updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
     onAuthStateChanged,
+    updateProfile
 } from "firebase/auth";
 import {
     getFirestore,
@@ -19,6 +16,9 @@ import {
     doc,
     query,
     where,
+    updateDoc,
+    setDoc,
+    deleteDoc
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -40,10 +40,9 @@ const firebaseAuth = getAuth(firebaseApp);
 const firestore = getFirestore(firebaseApp);
 const storage = getStorage(firebaseApp);
 
-const googleProvider = new GoogleAuthProvider();
-
 export const FirebaseProvider = (props) => {
     const [user, setUser] = useState(null);
+
     useEffect(() => {
         onAuthStateChanged(firebaseAuth, (user) => {
             if (user) {
@@ -55,6 +54,7 @@ export const FirebaseProvider = (props) => {
         });
     }, []);
 
+    // Get the user data like his classes and role and update the state of the user
     const getUserData = async (email) => {
         const userQuery = query(collection(firestore, 'users'), where('email', '==', email));
         const userSnapshot = await getDocs(userQuery);
@@ -74,7 +74,7 @@ export const FirebaseProvider = (props) => {
         }
     };
 
-
+    // Sign up user with email and password
     const signupUserWithEmailAndPassword = async (email, password, fullName, role) => {
         try {
             const credential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
@@ -89,16 +89,31 @@ export const FirebaseProvider = (props) => {
         }
     };
 
+    // Add user to users collection in the firestore
+    const createUserCollection = async (fullName, email, classes, role) => {
+        const userCollectionRef = collection(firestore, "users");
+        const newUser = {
+            fullName,
+            email,
+            classes: [],
+            role,
+        };
+        try {
+            const docRef = await addDoc(userCollectionRef, newUser);
+            console.log("New user created with ID: ", docRef.id);
+        } catch (error) {
+            console.error("Error creating user: ", error);
+        }
+    };
 
-
+    // Sign in user with email and password
     const singinUserWithEmailAndPass = (email, password) =>
         signInWithEmailAndPassword(firebaseAuth, email, password);
 
-    const signinWithGoogle = () => signInWithPopup(firebaseAuth, googleProvider);
-
     const isLoggedIn = user ? true : false;
 
-    const logoutUser = () => {
+    // Sign out user
+    const signOutUser = () => {
         try {
             firebaseAuth.signOut();
         } catch (error) {
@@ -106,24 +121,23 @@ export const FirebaseProvider = (props) => {
         }
     };
 
-    const linkClassToUser = async (courseId) => {
+    // Creating a class: Utility function
+    const createClassUtil = async (courseId) => {
         const classRef = collection(firestore, "classes");
         const instructorName = user.displayName;
         const newClass = {
             courseId,
             instructorName,
             students: [],
-            blogs: []
         };
-
         try {
             const docRef = await addDoc(classRef, newClass);
-            console.log("New class created with ID: ", docRef.id);
-
         } catch (error) {
             console.error("Error creating class: ", error);
         }
     };
+
+    // Link class to user collection
     const linkUserToCreatedClass = async (classId) => {
         const userQuery = query(collection(firestore, "users"), where("email", "==", user.email));
         const userSnapshot = await getDocs(userQuery);
@@ -134,12 +148,12 @@ export const FirebaseProvider = (props) => {
         const userDoc = userSnapshot.docs[0];
         const updatedClasses = [...userDoc.data().classes, classId];
         await updateDoc(userDoc.ref, { classes: updatedClasses });
-
-        console.log("Updated user classes successfully");
     };
+
+    // Create a new class
     const createClass = async (courseId) => {
         try {
-            await linkClassToUser(courseId);
+            await createClassUtil(courseId);
             const classQuery = query(collection(firestore, "classes"), where("courseId", "==", courseId));
             const classSnapshot = await getDocs(classQuery);
             if (classSnapshot.empty) {
@@ -152,11 +166,11 @@ export const FirebaseProvider = (props) => {
             console.error("Error creating class: ", error);
         }
     }
+
+    // Join the class
     const joinClass = async (courseId) => {
         const classRef = collection(firestore, "classes");
-
         try {
-            // Get the class document with the given courseId
             const classQuery = query(classRef, where("courseId", "==", courseId));
             const classSnapshot = await getDocs(classQuery);
             if (classSnapshot.empty) {
@@ -164,13 +178,8 @@ export const FirebaseProvider = (props) => {
                 return;
             }
             const classDoc = classSnapshot.docs[0];
-
-            // Add the student to the class
             const updatedStudents = [...classDoc.data().students, user.uid];
             await updateDoc(classDoc.ref, { students: updatedStudents });
-
-            console.log("Joined class successfully");
-
             const userQuery = query(collection(firestore, "users"), where("email", "==", user.email));
             const userSnapshot = await getDocs(userQuery);
             if (userSnapshot.empty) {
@@ -186,41 +195,27 @@ export const FirebaseProvider = (props) => {
             console.error("Error joining class: ", error);
         }
     };
-    const createUserCollection = async (fullName, email, classes, role) => {
-        const userCollectionRef = collection(firestore, "users");
-        const newUser = {
-            fullName,
-            email,
-            classes: [],
-            role,
 
-        };
-        try {
-            const docRef = await addDoc(userCollectionRef, newUser);
-            console.log("New user created with ID: ", docRef.id);
-        } catch (error) {
-            console.error("Error creating user: ", error);
-        }
-    };
-
-    const addBlog = async (classId, title, description, attachedFile) => {
+    // Create blog
+    const addBlog = async (classId, description, attachedFile) => {
+        console.log(attachedFile);
         const fileRef = ref(storage, `uploads/files/${Date.now()}-${attachedFile.name}`);
         const uploadResult = await uploadBytes(fileRef, attachedFile);
         try {
             const collectionRef = collection(firestore, 'classes', classId, 'blogs');
             const result = await addDoc(collectionRef, {
-                title: title,
                 description: description,
                 attachedFileURL: uploadResult.ref.fullPath,
-
                 userEmail: user.email,
+                displayName: user.displayName,
+                classId: classId
             });
-            console.log('Blog added with ID: ', result.id);
         } catch (error) {
             console.error('Error adding blog: ', error);
         }
     };
 
+    // Read Blog
     const getBlogs = async (classId) => {
         try {
             const snapshot = await getDocs(collection(firestore, 'classes', classId, 'blogs'));
@@ -232,23 +227,25 @@ export const FirebaseProvider = (props) => {
         }
     };
 
+    // Update Blog
     const updateBlog = async (classId, blogId, newData) => {
         try {
             await updateDoc(doc(firestore, 'classes', classId, 'blogs', blogId), newData);
-            console.log('Blog updated successfully');
         } catch (error) {
             console.error('Error updating blog: ', error);
         }
     };
 
+    // Delete Blog
     const deleteBlog = async (classId, blogId) => {
         try {
             await deleteDoc(doc(firestore, 'classes', classId, 'blogs', blogId));
-            console.log('Blog deleted successfully');
         } catch (error) {
             console.error('Error deleting blog: ', error);
         }
     };
+
+    // Generate download URL for the uploaded file
     const generateDownloadUrl = async (filePath) => {
         try {
             console.log(filePath);
@@ -261,17 +258,17 @@ export const FirebaseProvider = (props) => {
             return null;
         }
     };
+
     return (
         <FirebaseContext.Provider
             value={{
-                signinWithGoogle,
                 signupUserWithEmailAndPassword,
                 singinUserWithEmailAndPass,
-                joinClass,
-                createClass,
+                signOutUser,
                 isLoggedIn,
                 user,
-                logoutUser,
+                joinClass,
+                createClass,
                 addBlog,
                 getBlogs,
                 generateDownloadUrl

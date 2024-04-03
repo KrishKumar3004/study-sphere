@@ -35,7 +35,7 @@ export default function MediaCard(props) {
             </CardContent>
             <CardActions>
 
-                <Button size="small" onClick={(e) => navigate('/{props.id}')}>View More</Button>
+                <Button size="small" onClick={(e) => navigate(`/${props.id}`)}>View More</Button>
             </CardActions>
         </Card>
     );

@@ -39,22 +39,33 @@ const CreateClass = ({ open, setOpen }) => {
                     borderRadius: 8,
                 }}
             >
-                <Typography variant="h5" gutterBottom>
-                    Create a New Class
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    Welcome to the class creation wizard. Please enter a unique Course ID for your new class.
-                </Typography>
-                <form onSubmit={handleSubmit}>
-
-                    <input type="text" id="courseId" value={courseId}
-                        onChange={(event) => setCourseId(event.target.value)}
-                        placeholder='Enter Course ID'
-                        style={{ marginBottom: '16px', width: '100%', padding: '8px' }} />
-                    <Button variant="contained" color="primary" type="submit">
-                        Create Class
-                    </Button>
-                </form>
+                {firebase.user ? (
+                    <>
+                        <Typography variant="h5" gutterBottom>
+                            Create a New Class
+                        </Typography>
+                        <Typography variant="body1" gutterBottom>
+                            Welcome to the class creation wizard. Please enter a unique Course ID for your new class.
+                        </Typography>
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="text"
+                                id="courseId"
+                                value={courseId}
+                                onChange={(event) => setCourseId(event.target.value)}
+                                placeholder='Enter Course ID'
+                                style={{ marginBottom: '16px', width: '100%', padding: '8px' }}
+                            />
+                            <Button variant="contained" color="primary" type="submit">
+                                Create Class
+                            </Button>
+                        </form>
+                    </>
+                ) : (
+                    <Typography variant="body1" gutterBottom>
+                        Please login to create a class.
+                    </Typography>
+                )}
             </Box>
         </Modal>
     );

@@ -5,10 +5,9 @@ import { useFirebase } from '../context/firebase';
 import { useNavigate } from 'react-router-dom';
 
 const BlogForm = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [attachedFile, setAttachedFile] = useState(null); // Use null to represent no file initially
 
+    const [description, setDescription] = useState('');
+    const [attachedFile, setAttachedFile] = useState(null);
     const [blogs, setBlogs] = useState([]);
     const { classId } = useParams();
     const firebase = useFirebase();
@@ -43,11 +42,8 @@ const BlogForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-
-
-        await firebase.addBlog(classId, title, description, attachedFile);
-        setTitle('');
+        console.log(attachedFile);
+        await firebase.addBlog(classId, description, attachedFile);
         setDescription('');
         setAttachedFile(null); // Reset attachedFile after submission
     };
@@ -58,54 +54,64 @@ const BlogForm = () => {
     };
 
     return (
+
         <div>
-            <form onSubmit={handleSubmit}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            label="Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            fullWidth
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            label="Description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            fullWidth
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Button variant="contained" color="primary" type="submit">
-                            Create Blog
-                        </Button>
-                    </Grid>
-                </Grid>
-            </form>
-            <Typography variant="h5" gutterBottom>
-                Existing Blogs
-            </Typography>
-            <Grid container spacing={2}>
-                {blogs.map((blog) => {
-                    console.log(blog);
-                    return (
-                        <Grid item key={blog.id} xs={12} sm={6} md={4}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">{blog.title}</Typography>
-                                    <Typography>{blog.description}</Typography>
-                                    {/* Display other blog details as needed */}
-                                    <Button onClick={() => handleDownload(blog.attachedFileURL)}> Download</Button>
-                                </CardContent>
-                            </Card>
+            <Card sx={{ width: '70%', margin: 'auto', padding: '1rem' }}>
+                <CardContent>
+                    <form onSubmit={handleSubmit}>
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Announce"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={handleFileChange}
+                                    id="fileInput"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button variant="contained" color="primary" type="submit">
+                                    Create Blog
+                                </Button>
+                            </Grid>
                         </Grid>
-                    )
-                })}
-            </Grid>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card sx={{ width: '70%', margin: 'auto', marginTop: '2rem', padding: '1rem' }}>
+                <CardContent>
+                    <Grid container spacing={2}>
+                        {blogs.map((blog) => {
+                            console.log(blog);
+                            return (
+                                <Grid item key={blog.id} xs={12} sm={6} md={4}>
+                                    <Card>
+                                        <CardContent>
+                                            <Typography>{blog.description}</Typography>
+                                            {/* Display other blog details as needed */}
+                                            <Button onClick={() => handleDownload(blog.attachedFileURL)}>Download</Button>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            )
+                        })}
+                    </Grid>
+                </CardContent>
+            </Card>
+
         </div>
     );
 };
 
 export default BlogForm;
+

@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -30,40 +29,36 @@ function Copyright(props) {
     );
 }
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
 const defaultTheme = createTheme();
 
 export default function SignUp() {
     const firebase = useFirebase();
-    console.log(firebase.user);
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [fullName, setFullName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [role, setRole] = useState("");
-    const navigate = useNavigate();
+
     const handleEmailChange = (event) => {
         setEmail(event.target.value);
     };
-
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);
     };
     const handleFirstNameChange = (event) => {
         setFirstName(event.target.value);
-        setFullName(firstName + " " + lastName);
     };
     const handleLastNameChange = (event) => {
         setLastName(event.target.value);
-        setFullName(firstName + " " + lastName);
     }
     const handleRoleChange = (event) => {
         setRole(event.target.value);
     }
     const handleSubmit = (event) => {
         event.preventDefault();
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
         firebase.signupUserWithEmailAndPassword(email, password, fullName, role);
         navigate('/');
     };
@@ -167,7 +162,6 @@ export default function SignUp() {
                         </Grid>
                     </Box>
                 </Box>
-
             </Container>
         </ThemeProvider>
     );
