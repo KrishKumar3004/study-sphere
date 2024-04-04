@@ -56,13 +56,13 @@ const BlogForm = () => {
     return (
 
         <div>
-            <Card sx={{ width: '70%', margin: 'auto', padding: '1rem' }}>
+            <Card sx={{ width: '95%', margin: 'auto', padding: '1rem' }}>
                 <CardContent>
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={2} alignItems="center">
                             <Grid item xs={12}>
                                 <TextField
-                                    label="Announce"
+                                    label="Announce something to your class"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     fullWidth
@@ -88,30 +88,33 @@ const BlogForm = () => {
                 </CardContent>
             </Card>
 
-            <Card sx={{ width: '70%', margin: 'auto', marginTop: '2rem', padding: '1rem' }}>
-                <CardContent>
-                    <Grid container spacing={2}>
-                        {blogs.map((blog) => {
-                            console.log(blog);
-                            return (
-                                <Grid item key={blog.id} xs={12} sm={6} md={4}>
-                                    <Card>
-                                        <CardContent>
-                                            <Typography>{blog.description}</Typography>
-                                            {/* Display other blog details as needed */}
-                                            <Button onClick={() => handleDownload(blog.attachedFileURL)}>Download</Button>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            )
-                        })}
-                    </Grid>
-                </CardContent>
-            </Card>
+            {blogs.length > 0 && (
+                <Card sx={{ width: '95%', margin: 'auto', marginTop: '2rem', padding: '1rem' }}>
+                    <CardContent>
+                        <Grid container spacing={2}>
+                            {blogs.map((blog) => {
+                                console.log(blog);
+                                return (
+                                    <Grid item key={blog.id} xs={12}>
+                                        <Card sx={{ width: '100%', marginBottom: '1rem' }}>
+                                            <CardContent>
+                                                <Typography>{blog.description}</Typography>
+                                                <Button onClick={() => handleDownload(blog.attachedFileURL)}>Download the Attached File</Button>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                )
+                            })}
+                        </Grid>
+                    </CardContent>
+                </Card>
+            )}
 
         </div>
     );
 };
 
 export default BlogForm;
+
+
 
